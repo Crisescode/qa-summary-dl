@@ -6,6 +6,13 @@ __pycache__/
 # C extensions
 *.so
 
+# pycharm
+.idea/
+
+# dataset
+data/
+dataset/
+
 # Distribution / packaging
 .Python
 build/
