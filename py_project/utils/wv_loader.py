@@ -9,7 +9,7 @@ from .config import embedding_matrix_path
 logging.basicConfig(format="%(asctime)s : %(levelname)s : %(message)s", level=logging.INFO)
 
 
-def load_word2vec_file(save_wv_model_path):
+def get_embedding_matrix(save_wv_model_path):
     wv_model = Word2Vec.load(save_wv_model_path)
     embedding_matrix = wv_model.wv.vectors
 

@@ -1,10 +1,12 @@
-
 import tensorflow as tf
 from tensorflow.keras.models import Model, Sequential
 from tensorflow.keras.layers import GRU, Input, Dense, TimeDistributed, Activation, RepeatVector, Bidirectional
 from tensorflow.keras.layers import Embedding
 from tensorflow.keras.optimizers import Adam
 from tensorflow.keras.losses import sparse_categorical_crossentropy
+
+from ..utils.config import save_wv_model_path
+from ..utils.wv_loader import get_vocab, get_embedding_matrix
 
 
 class Encoder(tf.keras.Model):
@@ -34,7 +36,7 @@ class BahdanauAttention(tf.keras.layers.Layer):
         self.W2 = tf.keras.layers.Dense(units)
         self.V = tf.keras.layers.Dense(1)
 
-    def call(self, query, values):
+    def __call__(self, query, values):
         # query hidden state shape == (batch_size, hidden size)
         # query_with_time_axis shape == (batch_size, 1, hidden size)
         # values shape == (batch_size, max_len, hidden size)
@@ -72,7 +74,7 @@ class Decoder(tf.keras.Model):
         # used for attention
         self.attention = BahdanauAttention(self.dec_units)
 
-    def call(self, x, hidden, enc_output):
+    def __call__(self, x, hidden, enc_output):
         # enc_output shape == (batch_size, max_length, hidden_size)
         context_vector, attention_weights = self.attention(hidden, enc_output)
 
@@ -100,4 +102,32 @@ if __name__ == "__main__":
     # 计算vocab size
     vocab_size = len(vocab)
     # 使用GenSim训练好的embedding matrix
-    embedding_matrix = load_word2vec_file(save_wv_model_path)
+    embedding_matrix = get_embedding_matrix(save_wv_model_path)
+
+    input_sequence_len = 250
+    BATCH_SIZE = 64
+    embedding_dim = 500
+    units = 1024
+
+    # 编码器结构
+    encoder = Encoder(vocab_size, embedding_dim, embedding_matrix, units, BATCH_SIZE)
+    # example_input
+    example_input_batch = tf.ones(shape=(BATCH_SIZE, input_sequence_len), dtype=tf.int32)
+    # sample input
+    sample_hidden = encoder.initialize_hidden_state()
+
+    sample_output, sample_hidden = encoder(example_input_batch, sample_hidden)
+    # 打印结果
+    print('Encoder output shape: (batch size, sequence length, units) {}'.format(sample_output.shape))
+    print('Encoder Hidden state shape: (batch size, units) {}'.format(sample_hidden.shape))
+
+    attention_layer = BahdanauAttention(10)
+    attention_result, attention_weights = attention_layer(sample_hidden, sample_output)
+
+    print("Attention result shape: (batch size, units) {}".format(attention_result.shape))
+    print("Attention weights shape: (batch_size, sequence_length, 1) {}".format(attention_weights.shape))
+
+    decoder = Decoder(vocab_size, embedding_dim, embedding_matrix, units, BATCH_SIZE)
+    sample_decoder_output, _, _ = decoder(tf.random.uniform((64, 1)), sample_hidden, sample_output)
+
+    print('Decoder output shape: (batch_size, vocab size) {}'.format(sample_decoder_output.shape))
