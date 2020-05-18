@@ -14,3 +14,7 @@ save_wv_model_path = os.path.join(root, "Hashing", "gen_data", "word2vec.model")
 
 embedding_matrix_path = os.path.join(root, "Hashing",  "gen_data", "embedding_matrix")
 
+# 模型保存文件夹
+checkpoint_dir = os.path.join(root, "Hashing", 'gen_data', 'checkpoints', 'training_checkpoints_mask_loss_dim300_seq')
+
+checkpoint_prefix = os.path.join(checkpoint_dir, 'ckpt')

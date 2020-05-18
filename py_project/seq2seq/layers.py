@@ -100,7 +100,7 @@ class Decoder(tf.keras.Model):
         # output shape == (batch_size, vocab)
         x = self.fc(output)
 
-        return x, state, attention_weights
+        return x, state
 
 
 if __name__ == "__main__":
