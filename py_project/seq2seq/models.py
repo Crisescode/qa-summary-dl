@@ -1,8 +1,8 @@
 import tensorflow as tf
 
-from .layers import Encoder, BahdanauAttention, Decoder
-from ..utils.config import save_wv_model_path
-from ..utils.wv_loader import load_embedding_matrix, get_vocab
+from seq2seq.layers import Encoder, BahdanauAttention, Decoder
+from utils.config import save_wv_model_path
+from utils.wv_loader import load_embedding_matrix, get_vocab
 
 
 class Seq2Seq(tf.keras.Model):
@@ -12,12 +12,12 @@ class Seq2Seq(tf.keras.Model):
         self.params = params
         self.encoder = Encoder(
             params["vocab_size"],
-            params["embedding_size"],
+            params["embed_size"],
             self.embedding_matrix,
             params["enc_units"],
             params["batch_size"]
         )
-        self.attention = BahdanauAttention(params["attention_units"])
+        self.attention = BahdanauAttention(params["attn_units"])
         self.decoder = Decoder(
             params["vocab_size"],
             params["embed_size"],
@@ -26,34 +26,34 @@ class Seq2Seq(tf.keras.Model):
             params["batch_size"]
         )
 
-        def call_encoder(self, enc_inp):
-            enc_hidden = self.encoder.initialize_hidden_state()
-            enc_output, enc_hidden = self.encoder(enc_inp, enc_hidden)
+    def call_encoder(self, enc_inp):
+        enc_hidden = self.encoder.initialize_hidden_state()
+        enc_output, enc_hidden = self.encoder(enc_inp, enc_hidden)
 
-            return enc_output, enc_hidden
+        return enc_output, enc_hidden
 
-        def call_decoder_onestep(self, dec_input, dec_hidden, enc_output):
-            context_vector, attention_weights = self.attention(dec_hidden, enc_output)
-            pred, dec_hidden = self.decoder(dec_input, None, None, context_vector)
+    def call_decoder_onestep(self, dec_input, dec_hidden, enc_output):
+        context_vector, attention_weights = self.attention(dec_hidden, enc_output)
+        pred, dec_hidden = self.decoder(dec_input, None, None, context_vector)
 
-            return pred, dec_hidden, context_vector, attention_weights
+        return pred, dec_hidden, context_vector, attention_weights
 
-        def call(self, dec_input, dec_hidden, enc_output, dec_target):
-            predictions = []
-            attentions = []
+    def call(self, dec_input, dec_hidden, enc_output, dec_target):
+        predictions = []
+        attentions = []
 
-            context_vector, _ = self.attention(dec_hidden, enc_output)
+        context_vector, _ = self.attention(dec_hidden, enc_output)
 
-            for t in range(1, dec_target.shape[1]):
-                pred, dec_hidden = self.decoder(dec_input, dec_hidden, enc_output, context_vector)
-                context_vector, attn = self.attention(dec_hidden, enc_output)
+        for t in range(1, dec_target.shape[1]):
+            pred, dec_hidden = self.decoder(dec_input, dec_hidden, enc_output, context_vector)
+            context_vector, attn = self.attention(dec_hidden, enc_output)
 
-                dec_input = tf.expand_dims(dec_target[:, t], 1)
+            dec_input = tf.expand_dims(dec_target[:, t], 1)
 
-                predictions.append(pred)
-                attentions.append(attn)
+            predictions.append(pred)
+            attentions.append(attn)
 
-                return tf.stack(predictions, 1), dec_hidden
+            return tf.stack(predictions, 1), dec_hidden
 
 
 if __name__ == '__main__':

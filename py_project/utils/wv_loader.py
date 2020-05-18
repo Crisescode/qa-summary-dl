@@ -3,7 +3,7 @@ import numpy as np
 
 from gensim.models.word2vec import LineSentence, Word2Vec
 
-from .config import embedding_matrix_path
+# from utils.config import embedding_matrix_path
 
 
 logging.basicConfig(format="%(asctime)s : %(levelname)s : %(message)s", level=logging.INFO)
@@ -36,6 +36,7 @@ def load_vocab(file_path):
 
 
 def load_embedding_matrix():
+    embedding_matrix_path = "/content/gdrive/My Drive/Colab Notebooks/Hashing/gen_data/embedding_matrix"
     return np.load(embedding_matrix_path + ".npy")
 
 

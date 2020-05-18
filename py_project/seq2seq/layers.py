@@ -5,8 +5,8 @@ from tensorflow.keras.layers import Embedding
 from tensorflow.keras.optimizers import Adam
 from tensorflow.keras.losses import sparse_categorical_crossentropy
 
-from ..utils.config import save_wv_model_path
-from ..utils.wv_loader import get_vocab, get_embedding_matrix
+from utils.config import save_wv_model_path
+from utils.wv_loader import get_vocab, get_embedding_matrix
 
 
 class Encoder(tf.keras.Model):

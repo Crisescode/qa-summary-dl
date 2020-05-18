@@ -1,6 +1,6 @@
 import tensorflow as tf
 
-from ..utils.data_loader import load_train_dataset, load_test_dataset
+from utils.data_loader import load_train_dataset, load_test_dataset
 
 
 def train_batch_generator(batch_size, max_enc_len=200, max_dec_len=50, sample_sum=None):
