@@ -14,9 +14,13 @@ class Encoder(tf.keras.Model):
         super(Encoder, self).__init__()
         self.batch_size = batch_size
         self.enc_units = enc_units
-        self.embedding = tf.keras.layers.Embedding(vocab_size, embedding_dim, weights=[embedding_matrix],
+        self.embedding = tf.keras.layers.Embedding(vocab_size,
+                                                   embedding_dim,
+                                                   weights=[embedding_matrix],
                                                    trainable=True)
-        self.gru = tf.keras.layers.GRU(self.enc_units, return_sequences=True, return_state=True,
+        self.gru = tf.keras.layers.GRU(self.enc_units,
+                                       return_sequences=True,
+                                       return_state=True,
                                        recurrent_initializer="glorot_uniform")
 
     def __call__(self, x, hidden):
@@ -60,11 +64,14 @@ class BahdanauAttention(tf.keras.layers.Layer):
 
 
 class Decoder(tf.keras.Model):
-    def __init__(self, vocab_size, embedding_dim, dec_units, batch_sz):
+    def __init__(self, vocab_size, embedding_dim, embedding_matrix, dec_units, batch_sz):
         super(Decoder, self).__init__()
         self.batch_sz = batch_sz
         self.dec_units = dec_units
-        self.embedding = tf.keras.layers.Embedding(vocab_size, embedding_dim)
+        self.embedding = tf.keras.layers.Embedding(vocab_size,
+                                                   embedding_dim,
+                                                   weights=[embedding_matrix],
+                                                   trainable=False)
         self.gru = tf.keras.layers.GRU(self.dec_units,
                                        return_sequences=True,
                                        return_state=True,
@@ -74,9 +81,9 @@ class Decoder(tf.keras.Model):
         # used for attention
         self.attention = BahdanauAttention(self.dec_units)
 
-    def __call__(self, x, hidden, enc_output):
+    def __call__(self, x, hidden, enc_output, context_vector):
         # enc_output shape == (batch_size, max_length, hidden_size)
-        context_vector, attention_weights = self.attention(hidden, enc_output)
+        # context_vector, attention_weights = self.attention(hidden, enc_output)
 
         # x shape after passing through embedding == (batch_size, 1, embedding_dim)
         x = self.embedding(x)

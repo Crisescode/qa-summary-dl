@@ -2,21 +2,6 @@ import numpy as np
 from .config import train_x_path, train_y_path, test_x_path, stop_words_path
 
 
-def load_dataset():
-    """
-    :return:
-    """
-    train_X = np.loadtxt(train_x_path)
-    train_Y = np.loadtxt(train_y_path)
-    test_X = np.loadtxt(test_x_path)
-
-    train_X.dtype = "float64"
-    train_Y.dtype = "float64"
-    test_X.dtype = "float64"
-
-    return train_X, train_Y, test_X
-
-
 def load_stop_words(path):
     with open(path, 'r', encoding="utf-8") as f:
         stop_words = [word.strip() for word in f.readlines()]
@@ -77,3 +62,42 @@ def preprocess_sentence(sentence, max_len, vocab):
     sentence = transform_data(sentence, vocab)
 
     return np.array([sentence])
+
+
+def load_dataset():
+    """
+    :return:
+    """
+    train_X = np.loadtxt(train_x_path)
+    train_Y = np.loadtxt(train_y_path)
+    test_X = np.loadtxt(test_x_path)
+
+    train_X.dtype = "float64"
+    train_Y.dtype = "float64"
+    test_X.dtype = "float64"
+
+    return train_X, train_Y, test_X
+
+
+def load_train_dataset(max_enc_len, max_dec_len):
+    train_X = np.load(train_x_path + ".npy")
+    train_Y = np.load(train_y_path + ".npy")
+
+    train_X = train_X[:, :max_enc_len]
+    train_Y = train_Y[:, :max_dec_len]
+
+    return train_X, train_Y
+
+
+def load_test_dataset(max_enc_len=200):
+    test_X = np.load(test_x_path + ".npy")
+    test_X = test_X[:, :max_enc_len]
+
+    return test_X
+
+
+def get_max_len(data):
+    max_lens = data.apply(lambda x: x.count(" ") + 1)
+    return int(np.mean(max_lens) + 2 * np.std(max_lens))
+
+
