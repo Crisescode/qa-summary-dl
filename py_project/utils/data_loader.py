@@ -1,5 +1,5 @@
 import numpy as np
-from utils.config import train_x_path, train_y_path, test_x_path, stop_words_path
+from utils.linux_config import train_x_path, train_y_path, test_x_path, stop_words_path
 
 
 def load_stop_words(path):
