@@ -81,9 +81,9 @@ class Decoder(tf.keras.Model):
         # used for attention
         self.attention = BahdanauAttention(self.dec_units)
 
-    def __call__(self, x, hidden, enc_output, context_vector):
+    def __call__(self, x, hidden, enc_output):
         # enc_output shape == (batch_size, max_length, hidden_size)
-        # context_vector, attention_weights = self.attention(hidden, enc_output)
+        context_vector, attention_weights = self.attention(hidden, enc_output)
 
         # x shape after passing through embedding == (batch_size, 1, embedding_dim)
         x = self.embedding(x)
@@ -100,7 +100,7 @@ class Decoder(tf.keras.Model):
         # output shape == (batch_size, vocab)
         x = self.fc(output)
 
-        return x, state
+        return x, state, attention_weights
 
 
 if __name__ == "__main__":
