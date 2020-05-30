@@ -25,7 +25,6 @@ class Encoder(tf.keras.Model):
 
     def __call__(self, x, hidden):
         x = self.embedding(x)
-        print(x.shape)
         output, state = self.gru(x, initial_state=hidden)
         return output, state
 
