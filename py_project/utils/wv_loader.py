@@ -35,8 +35,7 @@ def load_vocab(file_path):
     return vocab, reverse_vocab
 
 
-def load_embedding_matrix():
-    embedding_matrix_path = "/content/gdrive/My Drive/Colab Notebooks/Hashing/gen_data/embedding_matrix"
+def load_embedding_matrix(embedding_matrix_path="/content/gdrive/My Drive/Colab Notebooks/Hashing/gen_data/embedding_matrix"):
     return np.load(embedding_matrix_path + ".npy")
 
 
