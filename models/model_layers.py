@@ -35,31 +35,59 @@ class Encoder(tf.keras.Model):
 class BahdanauAttention(tf.keras.layers.Layer):
     def __init__(self, units):
         super(BahdanauAttention, self).__init__()
-        self.W1 = tf.keras.layers.Dense(units)
-        self.W2 = tf.keras.layers.Dense(units)
+        self.W_s = tf.keras.layers.Dense(units)
+        self.W_h = tf.keras.layers.Dense(units)
+        self.W_c = tf.keras.layers.Dense(units)
         self.V = tf.keras.layers.Dense(1)
 
-    def __call__(self, query, values):
-        # query hidden state shape == (batch_size, hidden size)
-        # query_with_time_axis shape == (batch_size, 1, hidden size)
-        # values shape == (batch_size, max_len, hidden size)
-        # we are doing this to broadcast addition along the time axis to calculate the score
-        query_with_time_axis = tf.expand_dims(query, 1)
+    def __call__(self, dec_hidden, enc_output, enc_pad_mask, use_coverage, prev_coverage):
+        # query为上次的GRU隐藏层
+        # values为编码器的编码结果enc_output
+        # 在seq2seq模型中，St是后面的query向量，而编码过程的隐藏状态hi是values。
 
-        # score shape == (batch_size, max_length, 1)
-        # we get 1 at the last axis because we are applying score to self.V
-        # the shape of the tensor before applying self.V is (batch_size, max_length, units)
-        score = self.V(tf.nn.tanh(
-            self.W1(query_with_time_axis) + self.W2(values)))
+        # hidden shape == (batch_size, hidden size)
+        # hidden_with_time_axis shape == (batch_size, 1, hidden size)
+        # we are doing this to perform addition to calculate the score
+        hidden_with_time_axis = tf.expand_dims(dec_hidden, 1)
 
-        # attention_weights shape == (batch_size, max_length, 1)
+        if use_coverage and prev_coverage is not None:
+            # self.W_s(values) [batch_sz, max_len, units] self.W_h(hidden_with_time_axis) [batch_sz, 1, units]
+            # self.W_c(prev_coverage) [batch_sz, max_len, units]  score [batch_sz, max_len, 1]
+            score = self.V(tf.nn.tanh(self.W_s(enc_output) + self.W_h(hidden_with_time_axis) + self.W_c(prev_coverage)))
+            # attention_weights shape (batch_size, max_len, 1)
+
+            mask = tf.cast(enc_pad_mask, dtype=score.dtype)
+            masked_score = tf.squeeze(score, axis=-1) * mask
+            masked_score = tf.expand_dims(masked_score, axis=2)
+
+            attention_weights = tf.nn.softmax(masked_score, axis=1)
+            coverage = attention_weights + prev_coverage
+        else:
+            # score shape == (batch_size, max_length, 1)
+            # we get 1 at the last axis because we are applying score to self.V
+            # the shape of the tensor before applying self.V is (batch_size, max_length, units)
+            # 计算注意力权重值
+            score = self.V(tf.nn.tanh(
+                self.W_s(enc_output) + self.W_h(hidden_with_time_axis)))
+
+            mask = tf.cast(enc_pad_mask, dtype=score.dtype)
+            masked_score = tf.squeeze(score, axis=-1) * mask
+            masked_score = tf.expand_dims(masked_score, axis=2)
+
+            attention_weights = tf.nn.softmax(masked_score, axis=1)
+            # attention_weights = masked_attention(attention_weights)
+            if use_coverage:
+                coverage = attention_weights
+
+            # attention_weights sha== (batch_size, max_length, 1)
         attention_weights = tf.nn.softmax(score, axis=1)
 
+        # # 使用注意力权重*编码器输出作为返回值，将来会作为解码器的输入
         # context_vector shape after sum == (batch_size, hidden_size)
-        context_vector = attention_weights * values
+        context_vector = attention_weights * enc_output
         context_vector = tf.reduce_sum(context_vector, axis=1)
 
-        return context_vector, attention_weights
+        return context_vector, tf.squeeze(attention_weights, -1), coverage
 
 
 class Decoder(tf.keras.Model):
@@ -100,6 +128,17 @@ class Decoder(tf.keras.Model):
         x = self.fc(output)
 
         return x, state, attention_weights
+
+
+class Pointer(tf.keras.layers.Layer):
+    def __init__(self):
+        super(Pointer, self).__init__()
+        self.w_s_reduce = tf.keras.layers.Dense(1)
+        self.w_i_reduce = tf.keras.layers.Dense(1)
+        self.w_c_reduce = tf.keras.layers.Dense(1)
+
+    def __call__(self, context_vector, dec_hidden, dec_inp):
+        return tf.nn.sigmoid(self.w_s_reduce(dec_hidden) + self.w_c_reduce(context_vector) + self.w_i_reduce(dec_inp))
 
 
 if __name__ == "__main__":
