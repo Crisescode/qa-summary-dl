@@ -1,6 +1,6 @@
-from ...utils.config import save_wv_model_path
-from ...utils.gpu import gpu_config
-from ...utils.wv_loader import get_vocab
+from utils.config import save_wv_model_path
+from utils.gpu import gpu_config
+from utils.wv_loader import get_vocab
 from tensorflow.keras.models import Model, Sequential
 from tensorflow.keras.layers import GRU, Input, Dense, TimeDistributed, Activation, RepeatVector, Bidirectional
 from tensorflow.keras.layers import Embedding

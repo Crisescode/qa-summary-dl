@@ -1,11 +1,11 @@
-from tensorflow as tf
+import tensorflow as tf
 
-from seq2seq_attention.models import Seq2Seq
-from seq2seq_attention.train_helper import train_model
-from ...utils.google_config import save_wv_model_path, checkpoint_dir
-from ...utils.gpu import gpu_config
-from ...utils.params import get_params
-from ...utils.wv_loader import get_vocab
+from models import Seq2Seq
+from train_helper import train_model
+from utils.config import save_wv_model_path, checkpoint_dir
+from utils.gpu import gpu_config
+from utils.params import get_params
+from utils.wv_loader import get_vocab
 
 
 def train(params):
@@ -32,7 +32,8 @@ if __name__ == "__main__":
     # get params
     params = get_params()
 
+    import sys
+    sys.path.append("/home/lcz/lenlp/qa-summary-dl/")
+
     # train
     train(params)
-
-
