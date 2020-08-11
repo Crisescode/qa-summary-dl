@@ -2,7 +2,7 @@ from tensorflow as tf
 
 from seq2seq_attention.models import Seq2Seq
 from seq2seq_attention.train_helper import train_model
-from ...utils.config import save_wv_model_path, checkpoint_dir
+from ...utils.google_config import save_wv_model_path, checkpoint_dir
 from ...utils.gpu import gpu_config
 from ...utils.params import get_params
 from ...utils.wv_loader import get_vocab

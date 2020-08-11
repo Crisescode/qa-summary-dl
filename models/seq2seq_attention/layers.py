@@ -1,15 +1,13 @@
-# -*- coding:utf-8 -*-
-# Created by LuoJie at 11/23/19
-
-from utils.config import save_wv_model_path
-from utils.gpu_utils import config_gpu
-from utils.wv_loader import get_vocab, load_word2vec_file
+from ...utils.config import save_wv_model_path
+from ...utils.gpu import gpu_config
+from ...utils.wv_loader import get_vocab
 from tensorflow.keras.models import Model, Sequential
 from tensorflow.keras.layers import GRU, Input, Dense, TimeDistributed, Activation, RepeatVector, Bidirectional
 from tensorflow.keras.layers import Embedding
 from tensorflow.keras.optimizers import Adam
 from tensorflow.keras.losses import sparse_categorical_crossentropy
 import tensorflow as tf
+
 
 class Encoder(tf.keras.Model):
     def __init__(self, vocab_size, embedding_dim, embedding_matrix, enc_units, batch_sz):
@@ -105,13 +103,14 @@ class Decoder(tf.keras.Model):
 
 if __name__ == '__main__':
     # GPU资源配置
-    config_gpu()
+    gpu_config()
     # 读取vocab训练
     vocab, reverse_vocab = get_vocab(save_wv_model_path)
     # 计算vocab size
     vocab_size = len(vocab)
     # 使用GenSim训练好的embedding matrix
-    embedding_matrix = load_word2vec_file(save_wv_model_path)
+    # embedding_matrix = load_word2vec_file(save_wv_model_path)
+    embedding_matrix = 0
 
     input_sequence_len = 250
     BATCH_SIZE = 64

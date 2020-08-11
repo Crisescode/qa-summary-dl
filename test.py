@@ -9,7 +9,7 @@ from tqdm import tqdm
 from seq2seq.test_helper import beam_decode
 from utils.wv_loader import Vocab
 from utils.params import get_params
-from utils.config import checkpoint_dir
+from utils.google_config import checkpoint_dir
 
 
 def test(params):

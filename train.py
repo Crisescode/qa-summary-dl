@@ -2,10 +2,10 @@
 
 import tensorflow as tf
 from seq2seq.models import Seq2Seq
-from utils.config import config_gpu
+from utils.google_config import config_gpu
 from utils.wv_loader import get_vocab
 from seq2seq.train_helper import train_model
-from utils.config import save_wv_model_path, checkpoint_dir
+from utils.google_config import save_wv_model_path, checkpoint_dir
 from utils.params import get_params
 
 
